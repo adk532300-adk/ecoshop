@@ -675,7 +675,7 @@ export default function StorePage() {
               <div className="bg-[#2ECC71] p-1 rounded-md"><Leaf className="w-4 h-4 text-[#0D0D0D]" /></div>
               <span className="font-black text-sm"><span className="text-[#2ECC71]">Eco</span>Shop</span>
             </div>
-            <p className="text-xs text-gray-600 text-center">© 2026 EcoShop. All rights reserved. · Team Leader: <span className="text-[#2ECC71]">Rahul R K</span> · Team: Dinesh Kumar A, Agneeshwar P · Guide: Midhunadharshni G</p>
+            <p className="text-xs text-gray-600 text-center">© 2026 EcoShop. All rights reserved.</p>
             <div className="flex gap-3 text-xs text-gray-500">
               <span onClick={() => alert('Privacy Policy opening...')} className="hover:text-[#2ECC71] cursor-pointer">Privacy</span>
               <span onClick={() => alert('Terms of Service opening...')} className="hover:text-[#2ECC71] cursor-pointer">Terms</span>
