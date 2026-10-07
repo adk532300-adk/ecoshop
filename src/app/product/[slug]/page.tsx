@@ -3,9 +3,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Star, Leaf, CheckCircle2, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import type { PageProps } from 'next/types';
 
-export default async function ProductPage({ params }: PageProps<'/product/[slug]'>) {
+type Props = {
+  params: Promise<{ slug: string }>
+}
+
+export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
 
   const product = await prisma.product.findUnique({
@@ -54,7 +57,7 @@ export default async function ProductPage({ params }: PageProps<'/product/[slug]
             </div>
             <div className="grid grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className={`aspect-square rounded-xl border ${i === 0 ? 'border-[#2ECC71]' : 'border-white/10'} bg-[#151515] overflow-hidden relative hover:opacity-100 cursor-pointer transition-opacity ${i !== 0 ? 'opacity-50' : ''}`}>
+                <div key={i} className={`aspect-square rounded-xl border ${i === 0 ? 'border-[#2ECC71]' : 'border-white/10'} bg-[#151515] overflow-hidden relative cursor-pointer transition-opacity ${i !== 0 ? 'opacity-50 hover:opacity-100' : ''}`}>
                   <Image src={product.imageUrl} alt="thumbnail" fill className="object-cover" />
                 </div>
               ))}
@@ -107,15 +110,15 @@ export default async function ProductPage({ params }: PageProps<'/product/[slug]
               </button>
             </div>
             <div className="grid grid-cols-3 gap-4 pt-8 border-t border-white/10">
-              <div className="flex flex-col items-center justify-center text-center gap-2">
+              <div className="flex flex-col items-center text-center gap-2">
                 <div className="bg-[#1A1A1A] p-3 rounded-full"><ShieldCheck className="w-6 h-6 text-[#2ECC71]" /></div>
                 <span className="text-xs text-gray-400 font-medium">1 Year<br/>Warranty</span>
               </div>
-              <div className="flex flex-col items-center justify-center text-center gap-2">
+              <div className="flex flex-col items-center text-center gap-2">
                 <div className="bg-[#1A1A1A] p-3 rounded-full"><Truck className="w-6 h-6 text-[#2ECC71]" /></div>
                 <span className="text-xs text-gray-400 font-medium">Free<br/>Delivery</span>
               </div>
-              <div className="flex flex-col items-center justify-center text-center gap-2">
+              <div className="flex flex-col items-center text-center gap-2">
                 <div className="bg-[#1A1A1A] p-3 rounded-full"><RotateCcw className="w-6 h-6 text-[#2ECC71]" /></div>
                 <span className="text-xs text-gray-400 font-medium">7 Days<br/>Return</span>
               </div>
