@@ -9,6 +9,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ChatDrawer from '@/components/chatbot/ChatDrawer';
@@ -544,20 +545,22 @@ export default function StorePage() {
                         transition={{ delay: i * 0.05 }}
                         className="group bg-[#1A1A1A] rounded-2xl border border-white/5 hover:border-[#2ECC71]/30 hover:shadow-[0_0_30px_rgba(46,204,113,0.07)] transition-all duration-300 overflow-hidden flex flex-col"
                       >
-                        <div className="relative aspect-[4/3] bg-[#111] overflow-hidden">
+                        <Link href={`/product/${product.slug}`} className="relative aspect-[4/3] bg-[#111] overflow-hidden block">
                           <Image src={product.imageUrl} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <button onClick={() => toggleWishlist(product.id)} className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-colors ${wishlist.includes(product.id) ? 'bg-red-500/20 text-red-400' : 'bg-black/40 text-gray-400 hover:text-red-400'}`}>
+                          <button onClick={(e) => { e.preventDefault(); toggleWishlist(product.id); }} className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-colors z-10 ${wishlist.includes(product.id) ? 'bg-red-500/20 text-red-400' : 'bg-black/40 text-gray-400 hover:text-red-400'}`}>
                             <Heart className="w-4 h-4" />
                           </button>
-                          <div className="absolute top-2 left-2 flex flex-col gap-1">
+                          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
                             <EcoBadge score={product.ecoScore} />
                             {product.rating >= 4.5 && <span className="bg-green-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">BESTSELLER</span>}
                           </div>
-                        </div>
+                        </Link>
 
                         <div className="p-4 flex flex-col flex-1 gap-2">
                           <span className="text-xs text-gray-600">{product.category}</span>
-                          <h3 className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-[#2ECC71] transition-colors">{product.name}</h3>
+                          <Link href={`/product/${product.slug}`}>
+                            <h3 className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-[#2ECC71] transition-colors">{product.name}</h3>
+                          </Link>
                           <StarRow rating={product.rating} count={product.reviews} />
 
                           <div className="flex items-baseline gap-2 mt-1">

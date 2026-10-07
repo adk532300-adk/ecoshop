@@ -2,25 +2,28 @@
 
 import { Star, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { featuredProduct } from '@/lib/data';
 
 export default function ProductCard() {
   return (
     <div className="bg-brand-card rounded-2xl p-6 border border-white/5 flex flex-col md:flex-row gap-8">
       {/* Product Image */}
-      <div className="w-full md:w-1/2 aspect-square relative rounded-xl overflow-hidden bg-white/5">
+      <Link href={`/product/${featuredProduct.slug}`} className="w-full md:w-1/2 aspect-square relative rounded-xl overflow-hidden bg-white/5 group cursor-pointer block">
         <Image
           src={featuredProduct.imageUrl}
           alt={featuredProduct.name}
           fill
-          className="object-cover"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
-      </div>
+      </Link>
 
       {/* Product Details */}
       <div className="w-full md:w-1/2 flex flex-col justify-center space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">{featuredProduct.name}</h1>
+          <Link href={`/product/${featuredProduct.slug}`} className="hover:text-[#2ECC71] transition-colors inline-block">
+            <h1 className="text-3xl font-bold text-white hover:text-[#2ECC71] mb-2">{featuredProduct.name}</h1>
+          </Link>
           <p className="text-brand-text-muted text-lg">{featuredProduct.description}</p>
         </div>
 
