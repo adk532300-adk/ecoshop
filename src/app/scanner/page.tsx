@@ -31,12 +31,49 @@ export default function ScannerPage() {
   const [errorMsg, setErrorMsg] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Smart keyword mapping: maps AI-detected labels → search terms in our store
+  const ECO_KEYWORD_MAP: Record<string, string[]> = {
+    // Personal Care
+    toothbrush:   ['bamboo', 'personal care'],
+    brush:        ['bamboo', 'personal care'],
+    comb:         ['neem', 'personal care'],
+    shampoo:      ['shampoo', 'personal care'],
+    soap:         ['shampoo', 'personal care'],
+    lotion:       ['personal care'],
+    // Kitchen / Food
+    bottle:       ['steel', 'water bottle', 'kitchen'],
+    'water bottle': ['steel', 'water bottle'],
+    cup:          ['steel', 'kitchen'],
+    mug:          ['steel', 'kitchen'],
+    bowl:         ['coconut', 'kitchen'],
+    wrap:         ['beeswax', 'kitchen'],
+    bag:          ['cotton', 'tote', 'accessories'],
+    'plastic bag': ['cotton', 'tote'],
+    // Stationery
+    notebook:     ['recycled', 'stationery'],
+    pen:          ['recycled', 'stationery'],
+    book:         ['recycled', 'stationery'],
+    // Tech
+    phone:        ['wheat straw', 'tech'],
+    'mobile phone': ['wheat straw', 'tech'],
+    // Accessories
+    wallet:       ['cork', 'accessories'],
+    sunglasses:   ['accessories'],
+  };
+
+  const getSearchTerms = (label: string): string[] => {
+    const lower = label.toLowerCase();
+    for (const [key, terms] of Object.entries(ECO_KEYWORD_MAP)) {
+      if (lower.includes(key)) return terms;
+    }
+    return [lower]; // fallback to original label
+  };
+
   const analyzeImage = useCallback(async (file: File) => {
     setScanState('scanning');
     setUploadedImage(URL.createObjectURL(file));
 
     try {
-      // Dynamically load TF.js to avoid SSR issues
       const tf = await import('@tensorflow/tfjs');
       const mobilenet = await import('@tensorflow-models/mobilenet');
 
@@ -56,14 +93,25 @@ export default function ScannerPage() {
       const topLabel = predictions[0].className.split(',')[0].trim();
       setDetectedItem(topLabel);
 
-      // Search our store for eco alternatives
-      const res = await fetch(`/api/products?search=${encodeURIComponent(topLabel)}`);
-      let products: Alternative[] = await res.json();
+      // Get smart search terms from keyword map
+      const searchTerms = getSearchTerms(topLabel);
 
-      // If no exact match, fetch all products as fallback
+      // Try each search term until we find products
+      let products: Alternative[] = [];
+      for (const term of searchTerms) {
+        const res = await fetch(`/api/products?search=${encodeURIComponent(term)}`);
+        const data: Alternative[] = await res.json();
+        if (data.length > 0) {
+          products = data;
+          break;
+        }
+      }
+
+      // If still no match, show all products sorted by eco score
       if (!products.length) {
         const fallback = await fetch('/api/products');
-        products = await fallback.json();
+        const all: Alternative[] = await fallback.json();
+        products = all.sort((a, b) => b.ecoScore - a.ecoScore);
       }
 
       setAlternatives(products.slice(0, 4));
@@ -73,6 +121,7 @@ export default function ScannerPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Could not analyze image. Please try again.');
       setScanState('error');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
