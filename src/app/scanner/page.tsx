@@ -36,6 +36,7 @@ export default function ScannerPage() {
     // Personal Care
     toothbrush:   ['bamboo', 'personal care'],
     brush:        ['bamboo', 'personal care'],
+    snorkel:      ['bamboo', 'personal care'], // MobileNet often misclassifies toothbrushes as snorkels!
     comb:         ['neem', 'personal care'],
     shampoo:      ['shampoo', 'personal care'],
     soap:         ['shampoo', 'personal care'],
@@ -61,12 +62,12 @@ export default function ScannerPage() {
     sunglasses:   ['accessories'],
   };
 
-  const getSearchTerms = (label: string): string[] => {
-    const lower = label.toLowerCase();
+  const getSearchTerms = (labels: string): string[] => {
+    const lower = labels.toLowerCase();
     for (const [key, terms] of Object.entries(ECO_KEYWORD_MAP)) {
       if (lower.includes(key)) return terms;
     }
-    return [lower]; // fallback to original label
+    return []; // return empty if no smart match
   };
 
   const analyzeImage = useCallback(async (file: File) => {
@@ -90,11 +91,17 @@ export default function ScannerPage() {
         throw new Error('Could not identify the product. Please try a clearer image.');
       }
 
+      // Look at top 3 predictions instead of just the 1st one
       const topLabel = predictions[0].className.split(',')[0].trim();
-      setDetectedItem(topLabel);
+      const allLabels = predictions.map(p => p.className).join(', ');
+      
+      setDetectedItem(topLabel); // Still show the main one it guessed
 
-      // Get smart search terms from keyword map
-      const searchTerms = getSearchTerms(topLabel);
+      // Get smart search terms from keyword map checking ALL top predictions
+      let searchTerms = getSearchTerms(allLabels);
+      if (searchTerms.length === 0) {
+        searchTerms = [topLabel]; // Fallback to raw label
+      }
 
       // Try each search term until we find products
       let products: Alternative[] = [];
