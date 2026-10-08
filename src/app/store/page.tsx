@@ -268,6 +268,12 @@ export default function StorePage() {
               <span className="text-xs font-semibold">Orders</span>
             </button>
 
+            {/* Eco Scanner Button */}
+            <Link href="/scanner" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2ECC71]/10 hover:bg-[#2ECC71]/20 border border-[#2ECC71]/30 transition-colors">
+              <span className="text-sm">🔍</span>
+              <span className="text-xs font-bold text-[#2ECC71]">Eco Scan</span>
+            </Link>
+
             {/* Wishlist */}
             <button onClick={() => setWishlistOpen(true)} className="p-2.5 rounded-lg hover:bg-white/5 transition-colors relative">
               <Heart className="w-5 h-5" />
