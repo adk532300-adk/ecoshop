@@ -402,12 +402,14 @@ export default function StorePage() {
               <span className="text-xs font-semibold text-white">Orders</span>
             </button>
 
-            {/* Eco Scanner Button (Prominent & Larger) */}
+            {/* Eco Scanner Button (Prominently Enlarged) */}
             <Link
               href="/scanner"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] font-black text-xs sm:text-sm transition-all shadow-[0_0_20px_rgba(46,204,113,0.35)] hover:scale-105 border border-[#2ECC71]"
+              className="flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-2xl bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] font-black text-xs sm:text-sm md:text-base tracking-tight transition-all shadow-[0_0_25px_rgba(46,204,113,0.45)] hover:shadow-[0_0_35px_rgba(46,204,113,0.65)] hover:scale-105 border-2 border-[#2ECC71] flex-shrink-0"
+              title="Launch Edge AI Computer Vision Scanner"
             >
-              <Scan className="w-4 h-4 stroke-[2.5]" />
+              <Scan className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+              <span className="inline sm:hidden">AI Scanner</span>
               <span className="hidden sm:inline">AI Vision Scanner</span>
             </Link>
 

@@ -49,9 +49,9 @@ export default function Home() {
             </Link>
             <Link
               href="/scanner"
-              className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] text-xs font-black px-4 py-2.5 rounded-xl transition-all shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:scale-105 uppercase tracking-wide"
+              className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] text-xs sm:text-sm font-black px-5 py-3 rounded-2xl transition-all shadow-[0_0_25px_rgba(46,204,113,0.45)] hover:shadow-[0_0_35px_rgba(46,204,113,0.65)] hover:scale-105 border-2 border-[#2ECC71] tracking-wide"
             >
-              <Scan className="w-4 h-4" />
+              <Scan className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
               <span>Launch CV Scanner</span>
             </Link>
           </div>
