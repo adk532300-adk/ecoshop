@@ -282,7 +282,7 @@ export default function ProductActionButtons({ product }: ProductActionButtonsPr
                   </div>
                   <h3 className="text-2xl font-black mb-2 text-white">Order Confirmed!</h3>
                   <p className="text-gray-300 text-xs max-w-sm mx-auto leading-relaxed mb-4">
-                    Thank you for supporting UN SDG 12. Your order for <strong>{product.name}</strong> will be shipped in 100% plastic-free packaging to pincode <strong>{pincode}</strong>.
+                    Thank you for supporting sustainable living. Your order for <strong>{product.name}</strong> will be shipped in 100% plastic-free packaging to pincode <strong>{pincode}</strong>.
                   </p>
                   <div className="inline-flex items-center gap-2 bg-[#2ECC71]/10 border border-[#2ECC71]/20 px-3 py-1.5 rounded-full text-xs text-[#2ECC71] font-semibold">
                     <Sparkles className="w-3.5 h-3.5" />

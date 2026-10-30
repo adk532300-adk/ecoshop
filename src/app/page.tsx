@@ -20,7 +20,7 @@ export default function Home() {
           <div className="flex items-center gap-4 text-[11px] text-gray-500">
             <span>Sri Sairam Engineering College</span>
             <span>•</span>
-            <span className="text-[#2ECC71]">UN SDG 12 / 13 / 14</span>
+            <span className="text-[#2ECC71]">100% Zero-Plastic Mission</span>
           </div>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function Home() {
           </h1>
 
           <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed mb-10">
-            Automating the transition to UN SDG 12 (Responsible Consumption). Point your camera at any everyday plastic or manufactured item — our convolutional network identifies its composition in 40ms and prescribes certified biodegradable alternatives.
+            Automating the transition to sustainable consumption. Point your camera at any everyday plastic or manufactured item — our convolutional network identifies its composition in 40ms and prescribes certified biodegradable alternatives.
           </p>
 
           {/* Action CTAs */}
@@ -130,9 +130,9 @@ export default function Home() {
             <div className="bg-[#121212] p-4 rounded-2xl border border-white/5">
               <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
                 <Globe className="w-4 h-4 text-amber-400" />
-                <span>Target SDG</span>
+                <span>Impact Target</span>
               </div>
-              <div className="text-2xl font-black font-mono text-amber-400">SDG 12.5</div>
+              <div className="text-2xl font-black font-mono text-amber-400">Zero Waste</div>
               <span className="text-[11px] text-gray-400">Waste reduction & recycling</span>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function Home() {
               },
               {
                 step: '05',
-                title: 'SDG Semantic Mapping',
+                title: 'Semantic Eco Mapping',
                 tech: 'Taxonomy & Commerce API',
                 desc: 'Translates ImageNet categories into material life-cycle diagnostics and certified organic replacements.'
               }

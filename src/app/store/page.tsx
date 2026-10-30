@@ -27,7 +27,7 @@ type CartItem = Product & { quantity: number };
 const BANNERS = [
   { id: 1, tag: '🤖 EDGE-AI COMPUTER VISION', title: 'AI EcoScanner Live', subtitle: 'Point your camera at any plastic or daily item to detect hazards & eco alternatives in 40ms', cta: 'Open AI Scanner', link: '/scanner', color: 'from-emerald-950 via-[#112211] to-[#0D0D0D]', accent: '#2ECC71' },
   { id: 2, tag: '⚡ CLIENT-SIDE DEEP LEARNING', title: 'Zero Cloud GPU Latency', subtitle: 'MobileNet v1 running via WebGL right in your browser with 100% data privacy', cta: 'Test Model', link: '/scanner', color: 'from-teal-950 via-[#0B2520] to-[#0D0D0D]', accent: '#1ABC9C' },
-  { id: 3, tag: '🌍 UN SDG 12 ENGINE', title: 'Sustainable Substitution', subtitle: 'Quantifying plastic diversion, carbon offsets, and biodegradability in real-time', cta: 'Explore Catalog', link: '#products-grid', color: 'from-green-950 via-[#142814] to-[#0D0D0D]', accent: '#27AE60' },
+  { id: 3, tag: '🌍 ZERO PLASTIC ENGINE', title: 'Sustainable Substitution', subtitle: 'Quantifying plastic diversion, carbon offsets, and biodegradability in real-time', cta: 'Explore Catalog', link: '#products-grid', color: 'from-green-950 via-[#142814] to-[#0D0D0D]', accent: '#27AE60' },
 ];
 
 const CATEGORIES = [
@@ -299,7 +299,7 @@ export default function StorePage() {
         {/* Topmost strip */}
         <div className="bg-[#121212] border-b border-white/5 text-[#2ECC71] text-center text-xs py-1.5 font-semibold tracking-wide flex items-center justify-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
-          <span>⚡ Edge-AI Vision Enabled • Real-Time Material Diagnostics • Aligned with UN SDG 12</span>
+          <span>⚡ Edge-AI Vision Enabled • Real-Time Material Diagnostics • 100% Zero-Plastic Mission</span>
         </div>
 
         {/* Main header row */}
@@ -802,7 +802,7 @@ export default function StorePage() {
               <h2 className="text-xl font-black">Your Environmental Impact</h2>
               <p className="text-gray-500 text-xs">Track how your sustainable purchases benefit the planet</p>
             </div>
-            <span className="text-[#2ECC71] text-xs font-bold bg-[#2ECC71]/10 px-3 py-1 rounded-full border border-[#2ECC71]/20">🌍 Verified SDG Analytics</span>
+            <span className="text-[#2ECC71] text-xs font-bold bg-[#2ECC71]/10 px-3 py-1 rounded-full border border-[#2ECC71]/20">🌍 Verified Eco Analytics</span>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -844,7 +844,7 @@ export default function StorePage() {
             <div>
               <h4 className="font-bold text-xs uppercase tracking-wider mb-3 text-[#2ECC71]">Get to Know Us</h4>
               {[
-                { title: 'About EcoShop', text: 'EcoShop is an edge-AI powered sustainable marketplace engineered to bridge in-browser visual neural networks with UN SDG 12 (Responsible Consumption). Built at Sri Sairam Engineering College.' },
+                { title: 'About EcoShop', text: 'EcoShop is an edge-AI powered sustainable marketplace engineered to bridge in-browser visual neural networks with responsible consumption and zero-waste living. Built at Sri Sairam Engineering College.' },
                 { title: 'Careers', text: 'Join our research team focusing on mobile convolutional neural network optimization, green material science, and carbon lifecycle accounting.' },
                 { title: 'Press Releases', text: 'EcoShop launches zero-cloud-GPU edge inference scanner achieving sub-50ms material classification.' },
                 { title: 'Eco Initiative', text: 'Every purchase guarantees carbon-neutral delivery and zero virgin plastic packaging.' }
@@ -862,7 +862,7 @@ export default function StorePage() {
               <h4 className="font-bold text-xs uppercase tracking-wider mb-3 text-[#2ECC71]">Project & Research</h4>
               {[
                 { title: 'Computer Vision Architecture', text: 'Our pipeline utilizes MobileNet v1 with depthwise separable convolutions running natively inside browser WebGL context without transmitting user camera images to servers.' },
-                { title: 'UN SDG 12 Alignment', text: 'Targets SDG 12.5 by automatically diagnosing synthetic polymers and prescribing certified biodegradable alternatives.' },
+                { title: 'Zero Waste Mission', text: 'Targets waste elimination by automatically diagnosing synthetic polymers and prescribing certified biodegradable alternatives.' },
                 { title: 'Research Report', text: 'Complete academic documentation detailing system architecture, benchmarking, and telemetry.' },
                 { title: 'Open Source', text: 'Full source code available under MIT License for academic and non-profit environmental use.' }
               ].map(item => (
@@ -919,7 +919,7 @@ export default function StorePage() {
             <p className="text-xs text-gray-600 text-center">© 2026 EcoShop • Edge-AI Sustainable Commerce</p>
             <div className="flex gap-4 text-xs text-gray-500">
               <button onClick={() => setInfoModalContent({ title: 'Privacy Policy', content: '100% Visual Privacy: Images captured via your camera or uploaded to the AI EcoScanner are processed purely in client-side browser memory via WebGL. No images or video feeds are ever stored or sent to remote servers.' })} className="hover:text-[#2ECC71] cursor-pointer">Privacy</button>
-              <button onClick={() => setInfoModalContent({ title: 'Terms of Service', content: 'EcoShop provides product information and material life-cycle diagnostics in good faith based on public environmental data and UN SDG guidelines.' })} className="hover:text-[#2ECC71] cursor-pointer">Terms</button>
+              <button onClick={() => setInfoModalContent({ title: 'Terms of Service', content: 'EcoShop provides product information and material life-cycle diagnostics in good faith based on public environmental data and sustainability standards.' })} className="hover:text-[#2ECC71] cursor-pointer">Terms</button>
               <button onClick={() => setInfoModalContent({ title: 'Cookie Policy', content: 'EcoShop stores only necessary shopping cart and local preference state in browser local storage.' })} className="hover:text-[#2ECC71] cursor-pointer">Cookies</button>
             </div>
           </div>
@@ -1207,7 +1207,7 @@ export default function StorePage() {
                   </div>
                   <h3 className="text-2xl font-black mb-2 text-white">Order Confirmed!</h3>
                   <p className="text-gray-300 text-xs max-w-sm mx-auto leading-relaxed mb-4">
-                    Thank you for supporting UN SDG 12. Your eco order has been logged and will be shipped in 100% plastic-free packaging to pincode <strong>{locationPincode}</strong>.
+                    Thank you for supporting sustainable living. Your eco order has been logged and will be shipped in 100% plastic-free packaging to pincode <strong>{locationPincode}</strong>.
                   </p>
                   <div className="inline-flex items-center gap-2 bg-[#2ECC71]/10 border border-[#2ECC71]/20 px-3 py-1.5 rounded-full text-xs text-[#2ECC71] font-semibold">
                     <Sparkles className="w-3.5 h-3.5" />

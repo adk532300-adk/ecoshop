@@ -2,7 +2,7 @@
  * Semantic Classification Engine & Eco-Friendly Recommendation System
  * 
  * Bridges low-level ImageNet/MobileNet predictions to real-world household
- * product categories and UN SDG 12 eco-friendly alternatives.
+ * product categories and verified eco-friendly alternatives.
  */
 
 export type ProductCategory =
@@ -371,7 +371,7 @@ export function runSemanticPipeline(predictions: MobileNetPrediction[]): Semanti
       step1_upload: 'Captured raw camera tensor via HTML5 Canvas / MediaStream',
       step2_mobilenet: `MobileNet classified as "${topRawLabel}" (${topRawPercent}% Softmax activation)`,
       step3_semantic: `Semantic Engine mapped "${topRawLabel}" → ${meta.displayName} (${confidenceLevel} Confidence: ${scorePercent}%)`,
-      step4_recommendation: `Recommended ${meta.recommendedProductName} (UN SDG 12 Verified Alternative)`
+      step4_recommendation: `Recommended ${meta.recommendedProductName} (Verified Eco-Friendly Alternative)`
     }
   };
 }

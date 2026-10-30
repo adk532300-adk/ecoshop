@@ -47,7 +47,7 @@ interface MaterialLCA {
   landfillYears: string;
   microplasticRisk: string;
   carbonFootprint: string;
-  sdgGoal: string;
+  ecoImpact: string;
 }
 
 type ScanState = 'idle' | 'scanning' | 'results' | 'error';
@@ -83,7 +83,7 @@ export default function ScannerPage() {
           landfillYears: '400 - 500 Years',
           microplasticRisk: 'High (Synthetic bristle shedding in waterways)',
           carbonFootprint: '~65.0g CO₂e per plastic brush',
-          sdgGoal: 'SDG 14.1 (Prevent marine debris & microplastic pollution)'
+          ecoImpact: 'Prevents marine debris & microplastic pollution'
         };
       case 'bottle':
         return {
@@ -91,7 +91,7 @@ export default function ScannerPage() {
           landfillYears: '450+ Years',
           microplasticRisk: 'Critical High (Degrades into ocean micro-particulates)',
           carbonFootprint: '~82.8g CO₂e per single-use bottle',
-          sdgGoal: 'SDG 12.5 (Substantially reduce plastic waste generation)'
+          ecoImpact: 'Substantially reduces single-use plastic bottle waste'
         };
       case 'shampoo':
         return {
@@ -99,7 +99,7 @@ export default function ScannerPage() {
           landfillYears: '300+ Years',
           microplasticRisk: 'Moderate to High (Liquid bottle packaging waste)',
           carbonFootprint: '~420g CO₂e saved per solid bar',
-          sdgGoal: 'SDG 12.4 (Achieve environmentally sound management of chemicals)'
+          ecoImpact: 'Eliminates plastic liquid packaging & harsh chemicals'
         };
       case 'comb':
         return {
@@ -107,7 +107,7 @@ export default function ScannerPage() {
           landfillYears: '400+ Years',
           microplasticRisk: 'Moderate (Static split ends & brittle plastic fracture)',
           carbonFootprint: '~55g CO₂e per plastic comb',
-          sdgGoal: 'SDG 12.5 (Waste reduction via natural circular wood)'
+          ecoImpact: 'Eliminates microplastics via natural circular wood'
         };
       case 'tote bag':
         return {
@@ -115,7 +115,7 @@ export default function ScannerPage() {
           landfillYears: '20 - 500 Years (Ocean choke hazard for marine life)',
           microplasticRisk: 'Extreme (Breaks down into airborne microfibers)',
           carbonFootprint: '~33g CO₂e per plastic bag',
-          sdgGoal: 'SDG 14.1 (Reduce marine plastic pollution)'
+          ecoImpact: 'Prevents ocean plastic bag waste and marine choking'
         };
       case 'bowl':
         return {
@@ -123,7 +123,7 @@ export default function ScannerPage() {
           landfillYears: '100+ Years (Formaldehyde leaching risk when heated)',
           microplasticRisk: 'Moderate (Non-biodegradable synthetic resins)',
           carbonFootprint: '~350g CO₂e avoided by upcycling agricultural shells',
-          sdgGoal: 'SDG 12.5 (Circular economy by upcycling farm crop waste)'
+          ecoImpact: 'Fosters circular economy by upcycling farm crop waste'
         };
       case 'food wrap':
         return {
@@ -131,7 +131,7 @@ export default function ScannerPage() {
           landfillYears: '400+ Years (Toxic plasticizer migration risk)',
           microplasticRisk: 'Critical (Non-recyclable thin-film cling wrap)',
           carbonFootprint: '~120g CO₂e avoided per beeswax wrap set',
-          sdgGoal: 'SDG 12.5 (Replace single-use petroleum wraps)'
+          ecoImpact: 'Replaces single-use petroleum plastic wraps with beeswax'
         };
       case 'notebook':
         return {
@@ -139,7 +139,7 @@ export default function ScannerPage() {
           landfillYears: '2 - 5 Years (Releases Methane gas in landfills)',
           microplasticRisk: 'Low (Heavy chlorine bleaching chemical waste)',
           carbonFootprint: '~1.2 kg CO₂e saved per post-consumer notebook',
-          sdgGoal: 'SDG 15.2 (Halt deforestation & promote circular post-consumer paper)'
+          ecoImpact: 'Protects forests by promoting circular post-consumer paper'
         };
       case 'wallet':
         return {
@@ -147,7 +147,7 @@ export default function ScannerPage() {
           landfillYears: '150 - 300 Years (Petroleum-based synthetic leathers)',
           microplasticRisk: 'High (Peeling polymer flakes)',
           carbonFootprint: 'Cork trees absorb 5x more carbon when harvested for bark',
-          sdgGoal: 'SDG 12.2 (Sustainable management & efficient use of natural resources)'
+          ecoImpact: 'Sustainable renewable bark harvesting without cutting trees'
         };
       case 'phone case':
         return {
@@ -155,7 +155,7 @@ export default function ScannerPage() {
           landfillYears: '500+ Years (Rarely accepted by standard municipal recycling)',
           microplasticRisk: 'High (Yellows and gets incinerated as trash)',
           carbonFootprint: '~60g CO₂e saved per compostable bio-case',
-          sdgGoal: 'SDG 12.5 (Substitute petroleum TPU with agricultural straw)'
+          ecoImpact: 'Substitutes petroleum TPU with agricultural straw'
         };
       default:
         return {
@@ -163,7 +163,7 @@ export default function ScannerPage() {
           landfillYears: '100+ Years (Incomplete circular life cycle)',
           microplasticRisk: 'Moderate to High',
           carbonFootprint: '~120g CO₂e estimated footprint',
-          sdgGoal: 'SDG 12 (Responsible Consumption and Production)'
+          ecoImpact: 'Promotes responsible, circular eco-friendly consumption'
         };
     }
   };
@@ -352,7 +352,7 @@ export default function ScannerPage() {
           <div className="flex items-center gap-4 text-[11px] text-gray-500">
             <span>Sri Sairam Engineering College</span>
             <span>•</span>
-            <span className="text-[#2ECC71]">UN SDG 12 / 14 / 15</span>
+            <span className="text-[#2ECC71]">100% Zero-Plastic Mission</span>
           </div>
         </div>
       </div>
@@ -886,7 +886,7 @@ export default function ScannerPage() {
                       step: '04',
                       title: 'Eco Recommendation',
                       desc: semanticMatch.explanation.step4_recommendation,
-                      badge: 'UN SDG 12 Action'
+                      badge: 'Eco Action'
                     }
                   ].map((node, i) => (
                     <div
@@ -938,8 +938,8 @@ export default function ScannerPage() {
                       <span className="font-semibold text-amber-300">{lcaData.carbonFootprint}</span>
                     </div>
                     <div className="bg-[#121212]/60 p-3.5 rounded-xl border border-white/5">
-                      <span className="text-gray-500 text-[10px] block mb-1">UN SDG Target</span>
-                      <span className="font-semibold text-[#2ECC71]">{lcaData.sdgGoal}</span>
+                      <span className="text-gray-500 text-[10px] block mb-1">Eco Impact</span>
+                      <span className="font-semibold text-[#2ECC71]">{lcaData.ecoImpact}</span>
                     </div>
                   </div>
                 </div>
@@ -950,7 +950,7 @@ export default function ScannerPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold flex items-center gap-2">
                     <Leaf className="w-5 h-5 text-[#2ECC71]" />
-                    <span>Certified Sustainable Replacements (SDG 12.5)</span>
+                    <span>Certified Sustainable Replacements</span>
                   </h3>
                   <span className="text-xs text-gray-500">
                     Found {alternatives.length} eco-friendly alternative{alternatives.length !== 1 ? 's' : ''}

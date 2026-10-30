@@ -28,10 +28,10 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white">
-      {/* Top SDG & Vision Banner */}
+      {/* Top Vision Banner */}
       <div className="bg-[#111] border-b border-white/5 py-2 px-4 text-center text-xs text-gray-400 flex items-center justify-center gap-2">
         <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
-        <span>Verified Sustainable Sourcing • Zero Microplastic Formulation • Aligned with UN SDG 12</span>
+        <span>Verified Sustainable Sourcing • Zero Microplastic Formulation • 100% Zero-Plastic Mission</span>
       </div>
 
       {/* Navbar */}

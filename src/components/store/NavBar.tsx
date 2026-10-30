@@ -46,7 +46,7 @@ export default function NavBar() {
     <header className="w-full bg-[#0D0D0D]/90 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
       <div className="bg-[#121212] border-b border-white/5 text-[#2ECC71] text-center text-xs py-1.5 font-semibold tracking-wide flex items-center justify-center gap-2">
         <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
-        <span>⚡ Zero-Server-GPU Edge Computer Vision • Real-Time Material Diagnostics Aligned with UN SDG 12</span>
+        <span>⚡ Zero-Server-GPU Edge Computer Vision • Real-Time Material Diagnostics • 100% Zero-Plastic Mission</span>
       </div>
 
       <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
