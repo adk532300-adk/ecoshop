@@ -8,8 +8,15 @@ import {
   Leaf, ArrowLeft, Camera, Upload, X, Loader2,
   Star, CheckCircle2, RefreshCw, Scan, Zap, Activity,
   Cpu, Shield, Eye, AlertTriangle, Layers, BarChart3,
-  Video, VideoOff, Play
+  Video, VideoOff, ChevronDown, ChevronUp, Sparkles,
+  ArrowRight, Compass, Check
 } from 'lucide-react';
+import {
+  runSemanticPipeline,
+  SemanticMatch,
+  CATEGORY_METADATA,
+  ProductCategory
+} from '@/lib/semanticEngine';
 
 interface Alternative {
   id: string;
@@ -50,8 +57,12 @@ export default function ScannerPage() {
   const [scanState, setScanState] = useState<ScanState>('idle');
   const [inputMode, setInputMode] = useState<InputMode>('upload');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [detectedItem, setDetectedItem] = useState<string>('');
+  
+  // Semantic classification result
+  const [semanticMatch, setSemanticMatch] = useState<SemanticMatch | null>(null);
   const [topPredictions, setTopPredictions] = useState<PredictionItem[]>([]);
+  const [showTechnicalAI, setShowTechnicalAI] = useState<boolean>(false);
+
   const [telemetry, setTelemetry] = useState<CVTelemetry | null>(null);
   const [lcaData, setLcaData] = useState<MaterialLCA | null>(null);
   const [alternatives, setAlternatives] = useState<Alternative[]>([]);
@@ -64,81 +75,97 @@ export default function ScannerPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Smart keyword mapping: maps AI-detected labels → search terms in our store
-  const ECO_KEYWORD_MAP: Record<string, string[]> = {
-    // Personal Care
-    toothbrush:   ['bamboo', 'personal care'],
-    brush:        ['bamboo', 'personal care'],
-    snorkel:      ['bamboo', 'personal care'], // MobileNet often misclassifies toothbrushes as snorkels!
-    comb:         ['neem', 'personal care'],
-    shampoo:      ['shampoo', 'personal care'],
-    soap:         ['shampoo', 'personal care'],
-    lotion:       ['personal care'],
-    // Kitchen / Food
-    bottle:       ['steel', 'water bottle', 'kitchen'],
-    'water bottle': ['steel', 'water bottle'],
-    cup:          ['steel', 'kitchen'],
-    mug:          ['steel', 'kitchen'],
-    bowl:         ['coconut', 'kitchen'],
-    wrap:         ['beeswax', 'kitchen'],
-    bag:          ['cotton', 'tote', 'accessories'],
-    'plastic bag': ['cotton', 'tote'],
-    // Stationery
-    notebook:     ['recycled', 'stationery'],
-    pen:          ['recycled', 'stationery'],
-    book:         ['recycled', 'stationery'],
-    // Tech
-    phone:        ['wheat straw', 'tech'],
-    'mobile phone': ['wheat straw', 'tech'],
-    // Accessories
-    wallet:       ['cork', 'accessories'],
-    sunglasses:   ['accessories'],
-  };
-
-  const getSearchTerms = (labels: string): string[] => {
-    const lower = labels.toLowerCase();
-    for (const [key, terms] of Object.entries(ECO_KEYWORD_MAP)) {
-      if (lower.includes(key)) return terms;
+  const calculateLCA = (category: ProductCategory): MaterialLCA => {
+    switch (category) {
+      case 'toothbrush':
+        return {
+          materialType: 'Virgin Polypropylene Handle + Synthetic Nylon Bristles',
+          landfillYears: '400 - 500 Years',
+          microplasticRisk: 'High (Synthetic bristle shedding in waterways)',
+          carbonFootprint: '~65.0g CO₂e per plastic brush',
+          sdgGoal: 'SDG 14.1 (Prevent marine debris & microplastic pollution)'
+        };
+      case 'bottle':
+        return {
+          materialType: 'Single-Use Polyethylene Terephthalate (PET)',
+          landfillYears: '450+ Years',
+          microplasticRisk: 'Critical High (Degrades into ocean micro-particulates)',
+          carbonFootprint: '~82.8g CO₂e per single-use bottle',
+          sdgGoal: 'SDG 12.5 (Substantially reduce plastic waste generation)'
+        };
+      case 'shampoo':
+        return {
+          materialType: 'High-Density Polyethylene (HDPE) + 80% Water Transport',
+          landfillYears: '300+ Years',
+          microplasticRisk: 'Moderate to High (Liquid bottle packaging waste)',
+          carbonFootprint: '~420g CO₂e saved per solid bar',
+          sdgGoal: 'SDG 12.4 (Achieve environmentally sound management of chemicals)'
+        };
+      case 'comb':
+        return {
+          materialType: 'Non-Recyclable Molded Polystyrene',
+          landfillYears: '400+ Years',
+          microplasticRisk: 'Moderate (Static split ends & brittle plastic fracture)',
+          carbonFootprint: '~55g CO₂e per plastic comb',
+          sdgGoal: 'SDG 12.5 (Waste reduction via natural circular wood)'
+        };
+      case 'tote bag':
+        return {
+          materialType: 'Low-Density Polyethylene (LDPE) Thin Film',
+          landfillYears: '20 - 500 Years (Ocean choke hazard for marine life)',
+          microplasticRisk: 'Extreme (Breaks down into airborne microfibers)',
+          carbonFootprint: '~33g CO₂e per plastic bag',
+          sdgGoal: 'SDG 14.1 (Reduce marine plastic pollution)'
+        };
+      case 'bowl':
+        return {
+          materialType: 'Melamine Resin / Petroleum Plastic Dishware',
+          landfillYears: '100+ Years (Formaldehyde leaching risk when heated)',
+          microplasticRisk: 'Moderate (Non-biodegradable synthetic resins)',
+          carbonFootprint: '~350g CO₂e avoided by upcycling agricultural shells',
+          sdgGoal: 'SDG 12.5 (Circular economy by upcycling farm crop waste)'
+        };
+      case 'food wrap':
+        return {
+          materialType: 'Polyvinyl Chloride (PVC) / Polyethylene Cling Wrap',
+          landfillYears: '400+ Years (Toxic plasticizer migration risk)',
+          microplasticRisk: 'Critical (Non-recyclable thin-film cling wrap)',
+          carbonFootprint: '~120g CO₂e avoided per beeswax wrap set',
+          sdgGoal: 'SDG 12.5 (Replace single-use petroleum wraps)'
+        };
+      case 'notebook':
+        return {
+          materialType: 'Virgin Bleached Wood Pulp + Chlorine Bleaching',
+          landfillYears: '2 - 5 Years (Releases Methane gas in landfills)',
+          microplasticRisk: 'Low (Heavy chlorine bleaching chemical waste)',
+          carbonFootprint: '~1.2 kg CO₂e saved per post-consumer notebook',
+          sdgGoal: 'SDG 15.2 (Halt deforestation & promote circular post-consumer paper)'
+        };
+      case 'wallet':
+        return {
+          materialType: 'Polyurethane (PU) / Polyvinyl Chloride (PVC) Faux Leather',
+          landfillYears: '150 - 300 Years (Petroleum-based synthetic leathers)',
+          microplasticRisk: 'High (Peeling polymer flakes)',
+          carbonFootprint: 'Cork trees absorb 5x more carbon when harvested for bark',
+          sdgGoal: 'SDG 12.2 (Sustainable management & efficient use of natural resources)'
+        };
+      case 'phone case':
+        return {
+          materialType: 'Thermoplastic Polyurethane (TPU) / Silicone Blend',
+          landfillYears: '500+ Years (Rarely accepted by standard municipal recycling)',
+          microplasticRisk: 'High (Yellows and gets incinerated as trash)',
+          carbonFootprint: '~60g CO₂e saved per compostable bio-case',
+          sdgGoal: 'SDG 12.5 (Substitute petroleum TPU with agricultural straw)'
+        };
+      default:
+        return {
+          materialType: 'Commercial Non-Biodegradable Manufactured Goods',
+          landfillYears: '100+ Years (Incomplete circular life cycle)',
+          microplasticRisk: 'Moderate to High',
+          carbonFootprint: '~120g CO₂e estimated footprint',
+          sdgGoal: 'SDG 12 (Responsible Consumption and Production)'
+        };
     }
-    return [];
-  };
-
-  const calculateLCA = (label: string): MaterialLCA => {
-    const lower = label.toLowerCase();
-    if (lower.includes('bottle') || lower.includes('plastic') || lower.includes('bag') || lower.includes('cup') || lower.includes('straw')) {
-      return {
-        materialType: 'Petroleum Polyethylene / Single-Use Polymer',
-        landfillYears: '450 - 500 Years',
-        microplasticRisk: 'Critical High (Degrades into ocean micro-particulates)',
-        carbonFootprint: '~82.8g CO₂e per single unit',
-        sdgGoal: 'SDG 12.5 (Substantially reduce plastic waste generation)'
-      };
-    }
-    if (lower.includes('brush') || lower.includes('toothbrush') || lower.includes('snorkel')) {
-      return {
-        materialType: 'Virgin Polypropylene Handle + Synthetic Nylon',
-        landfillYears: '400+ Years',
-        microplasticRisk: 'High (Synthetic bristle shedding)',
-        carbonFootprint: '~65.0g CO₂e per brush',
-        sdgGoal: 'SDG 14.1 (Prevent marine debris & microplastic pollution)'
-      };
-    }
-    if (lower.includes('notebook') || lower.includes('paper') || lower.includes('book')) {
-      return {
-        materialType: 'Virgin Bleached Wood Pulp',
-        landfillYears: '2 - 5 Years (Releases Methane gas in landfills)',
-        microplasticRisk: 'Low (Heavy chemical chlorine bleaching hazard)',
-        carbonFootprint: '~1.8kg CO₂e per ream',
-        sdgGoal: 'SDG 15.2 (Halt deforestation & promote sustainable forests)'
-      };
-    }
-    return {
-      materialType: 'Commercial Non-Biodegradable Manufactured Goods',
-      landfillYears: '100+ Years (Incomplete circular life cycle)',
-      microplasticRisk: 'Moderate to High',
-      carbonFootprint: '~120g CO₂e estimated footprint',
-      sdgGoal: 'SDG 12 (Responsible Consumption and Production)'
-    };
   };
 
   // Start Camera
@@ -235,28 +262,43 @@ export default function ScannerPage() {
         tensorCount: tf.memory().numTensors
       });
 
-      const topLabel = rawPredictions[0].className.split(',')[0].trim();
-      const allLabels = rawPredictions.map(p => p.className).join(', ');
-      
-      setDetectedItem(topLabel);
-      setLcaData(calculateLCA(allLabels));
+      // Run through our Semantic Classification Engine
+      const match = runSemanticPipeline(rawPredictions);
+      setSemanticMatch(match);
+      setLcaData(calculateLCA(match.category));
 
-      // Map to eco alternatives in our store
-      let searchTerms = getSearchTerms(allLabels);
-      if (searchTerms.length === 0) {
-        searchTerms = [topLabel];
+      // Fetch recommended eco products from store database
+      const categoryMeta = CATEGORY_METADATA[match.category];
+      let products: Alternative[] = [];
+
+      // Query primary recommended product first
+      try {
+        const primaryRes = await fetch(`/api/products?search=${encodeURIComponent(categoryMeta.recommendedProductSlug)}`);
+        const primaryData: Alternative[] = await primaryRes.json();
+        if (primaryData.length > 0) {
+          products.push(...primaryData);
+        }
+      } catch (e) {
+        console.warn('Primary fetch error:', e);
       }
 
-      let products: Alternative[] = [];
-      for (const term of searchTerms) {
-        const res = await fetch(`/api/products?search=${encodeURIComponent(term)}`);
-        const data: Alternative[] = await res.json();
-        if (data.length > 0) {
-          products = data;
-          break;
+      // Query related category terms to give full options
+      for (const term of categoryMeta.keywords) {
+        if (products.length >= 4) break;
+        try {
+          const res = await fetch(`/api/products?search=${encodeURIComponent(term)}`);
+          const data: Alternative[] = await res.json();
+          for (const item of data) {
+            if (!products.some(p => p.id === item.id)) {
+              products.push(item);
+            }
+          }
+        } catch (e) {
+          console.warn('Category query error:', e);
         }
       }
 
+      // Fallback if needed
       if (!products.length) {
         const fallback = await fetch('/api/products');
         const all: Alternative[] = await fallback.json();
@@ -270,7 +312,6 @@ export default function ScannerPage() {
       setErrorMsg(err instanceof Error ? err.message : 'Computer Vision inference failed. Please try again.');
       setScanState('error');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,122 +322,147 @@ export default function ScannerPage() {
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      analyzeImageSource(url);
-    }
-  };
-
   const reset = () => {
     setScanState('idle');
     setUploadedImage(null);
-    setDetectedItem('');
+    setSemanticMatch(null);
     setTopPredictions([]);
     setTelemetry(null);
     setLcaData(null);
     setAlternatives([]);
     setErrorMsg('');
+    setShowTechnicalAI(false);
     stopCamera();
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
-      {/* Top Telemetry Header Bar */}
-      <header className="border-b border-white/5 bg-[#0D0D0D]/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/store" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium text-sm">Store Catalog</span>
-          </Link>
-          
+    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-[#2ECC71] selection:text-black">
+      {/* Top Academic & Telemetry Ribbon */}
+      <div className="bg-[#111] border-b border-white/5 py-2 px-4 text-center text-xs text-gray-400">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="bg-[#2ECC71] p-1.5 rounded-lg">
-              <Scan className="w-4 h-4 text-black" />
+            <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
+            <span className="font-medium text-gray-300">
+              Edge Computer Vision Workbench: Top-5 Softmax Semantic Engine
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-[11px] text-gray-500">
+            <span>Sri Sairam Engineering College</span>
+            <span>•</span>
+            <span className="text-[#2ECC71]">UN SDG 12 / 14 / 15</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="border-b border-white/5 bg-[#0D0D0D]/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/store" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-xs font-semibold">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Store Catalog</span>
+          </Link>
+
+          <Link href="/" className="flex items-center gap-2">
+            <div className="bg-[#2ECC71] p-1.5 rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.4)]">
+              <Leaf className="w-4 h-4 text-[#0D0D0D]" />
             </div>
             <span className="font-black text-lg tracking-tight">
-              Vision<span className="text-[#2ECC71]">LCA</span> Studio
+              <span className="text-[#2ECC71]">Eco</span>Shop
             </span>
-          </div>
+            <span className="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider ml-1">
+              Semantic AI
+            </span>
+          </Link>
 
-          <div className="hidden sm:flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5 bg-[#2ECC71]/10 text-[#2ECC71] px-3 py-1 rounded-full border border-[#2ECC71]/20">
-              <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
-              Edge WebGL Engine Ready
-            </span>
+          <div className="flex items-center gap-2">
+            {scanState === 'results' && (
+              <button
+                onClick={reset}
+                className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-3 py-1.5 rounded-xl text-xs font-medium border border-white/10 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>New Scan</span>
+              </button>
+            )}
+            <Link
+              href="/store"
+              className="bg-[#2ECC71] hover:bg-green-400 text-black font-black text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-[0_0_15px_rgba(46,204,113,0.3)]"
+            >
+              Go to Store
+            </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 md:py-12">
-        {/* Academic / Research Banner */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs text-gray-400 mb-4">
-            <Cpu className="w-3.5 h-3.5 text-[#2ECC71]" />
-            <span>MobileNet v1 Deep Neural Network • Client-Side Zero GPU Latency • UN SDG 12</span>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tight">
-            AI Computer Vision <span className="text-[#2ECC71]">Material Diagnostic</span>
-          </h1>
-          <p className="text-gray-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-            Classify everyday items in real-time using in-browser Deep Convolutional Networks (WebGL).
-            Quantify synthetic lifecycle hazards and discover certified zero-waste replacements.
-          </p>
-        </div>
-
+      {/* Main Container */}
+      <main className="max-w-5xl mx-auto px-4 py-8 md:py-12">
         <AnimatePresence mode="wait">
-          {/* IDLE STATE: Upload or Live Camera */}
+          {/* IDLE STATE */}
           {scanState === 'idle' && (
             <motion.div
               key="idle"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="flex flex-col gap-6"
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-8"
             >
-              {/* Input Mode Selector */}
+              {/* Header Title */}
+              <div className="text-center max-w-2xl mx-auto space-y-3">
+                <div className="inline-flex items-center gap-2 bg-[#2ECC71]/10 border border-[#2ECC71]/30 px-3.5 py-1.5 rounded-full text-xs text-[#2ECC71] font-semibold">
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Semantic Product Detection & Recommendation Engine</span>
+                </div>
+                <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                  Point Camera at Any{' '}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2ECC71] via-emerald-400 to-teal-300">
+                    Household Product
+                  </span>
+                </h1>
+                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                  Our Semantic Classification Engine evaluates top-5 neural logits, eliminates obscure ImageNet labels, detects real-world product categories, and prescribes certified eco-friendly alternatives.
+                </p>
+              </div>
+
+              {/* Mode Toggle Tabs */}
               <div className="flex justify-center">
-                <div className="inline-flex p-1 bg-[#141414] rounded-2xl border border-white/10 shadow-lg">
+                <div className="bg-[#141414] p-1 rounded-2xl border border-white/10 flex gap-1">
                   <button
                     onClick={() => {
                       stopCamera();
                       setInputMode('upload');
                     }}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       inputMode === 'upload'
-                        ? 'bg-[#2ECC71] text-black shadow-[0_0_15px_rgba(46,204,113,0.3)]'
+                        ? 'bg-[#2ECC71] text-black shadow-lg'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    <Upload className="w-4 h-4" />
-                    Upload Image
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Image</span>
                   </button>
                   <button
                     onClick={startCamera}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       inputMode === 'camera'
-                        ? 'bg-[#2ECC71] text-black shadow-[0_0_15px_rgba(46,204,113,0.3)]'
+                        ? 'bg-[#2ECC71] text-black shadow-lg'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    <Video className="w-4 h-4" />
-                    Live Webcam
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Live Webcam Mode</span>
                   </button>
                 </div>
               </div>
 
-              {/* Mode 1: Upload Dropzone */}
+              {/* Mode 1: Drag & Drop Upload Zone */}
               {inputMode === 'upload' && (
                 <div
-                  className="border-2 border-dashed border-white/10 hover:border-[#2ECC71]/50 rounded-3xl p-12 md:p-16 text-center cursor-pointer transition-all duration-300 bg-[#121212] hover:bg-[#161616] group shadow-2xl relative overflow-hidden"
                   onClick={() => fileInputRef.current?.click()}
-                  onDrop={handleDrop}
-                  onDragOver={(e) => e.preventDefault()}
+                  className="relative group cursor-pointer border-2 border-dashed border-white/15 hover:border-[#2ECC71] rounded-3xl p-8 sm:p-14 text-center transition-all bg-[#121212]/50 hover:bg-[#121212] overflow-hidden"
                 >
-                  {/* Subtle Grid Pattern */}
                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
                   <div className="relative z-10 flex flex-col items-center gap-5">
@@ -410,10 +476,10 @@ export default function ScannerPage() {
                     </div>
                     <div>
                       <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:text-[#2ECC71] transition-colors">
-                        Select an image to pass to TensorFlow
+                        Select an image to analyze
                       </h3>
                       <p className="text-gray-400 text-xs md:text-sm max-w-md mx-auto">
-                        Drag & drop any photo of a toothbrush, water bottle, plastic bag, or container.
+                        Drag & drop any photo of a toothbrush, water bottle, shampoo, comb, tote bag, bowl, or notebook.
                       </p>
                     </div>
 
@@ -422,13 +488,13 @@ export default function ScannerPage() {
                         e.stopPropagation();
                         fileInputRef.current?.click();
                       }}
-                      className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:scale-105"
+                      className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:scale-105 cursor-pointer"
                     >
                       <Upload className="w-4 h-4" />
                       Browse Files
                     </button>
                     <span className="text-[11px] text-gray-500">
-                      Processed 100% locally in browser memory • No cloud photo uploads
+                      Processed 100% locally in browser memory via WebGL • No cloud photo uploads
                     </span>
                   </div>
                 </div>
@@ -449,20 +515,17 @@ export default function ScannerPage() {
                     {/* Futuristic CV Reticle Overlay */}
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                       <div className="w-48 h-48 border border-[#2ECC71]/40 rounded-2xl relative">
-                        {/* Corner Brackets */}
                         <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-[#2ECC71]" />
                         <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-[#2ECC71]" />
                         <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-[#2ECC71]" />
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-[#2ECC71]" />
                         
-                        {/* Center Crosshair */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-4 h-0.5 bg-[#2ECC71]/60" />
                           <div className="h-4 w-0.5 bg-[#2ECC71]/60 absolute" />
                         </div>
                       </div>
 
-                      {/* Animated Scanning Laser Line */}
                       <motion.div
                         className="absolute inset-x-8 h-0.5 bg-[#2ECC71] shadow-[0_0_12px_#2ECC71]"
                         animate={{ top: ['15%', '85%', '15%'] }}
@@ -479,14 +542,14 @@ export default function ScannerPage() {
                   <div className="flex gap-4 mt-6">
                     <button
                       onClick={captureFromCamera}
-                      className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black px-8 py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(46,204,113,0.4)] hover:scale-105"
+                      className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black px-8 py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(46,204,113,0.4)] hover:scale-105 cursor-pointer"
                     >
                       <Scan className="w-4 h-4" />
                       Capture & Run Inference
                     </button>
                     <button
                       onClick={stopCamera}
-                      className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold px-4 py-3.5 rounded-xl text-xs border border-white/10 transition-colors"
+                      className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold px-4 py-3.5 rounded-xl text-xs border border-white/10 transition-colors cursor-pointer"
                     >
                       <VideoOff className="w-4 h-4" />
                       Cancel
@@ -495,15 +558,15 @@ export default function ScannerPage() {
                 </div>
               )}
 
-              {/* Sample benchmark items to test */}
+              {/* Quick Benchmark Test Objects */}
               <div className="text-center mt-4">
                 <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold block mb-3">
                   Quick Benchmark Test Objects:
                 </span>
                 <div className="flex flex-wrap justify-center gap-2">
                   {[
-                    { name: 'Plastic Water Bottle', icon: '🧴', img: '/products/steel-water-bottle.jpg' },
                     { name: 'Plastic Toothbrush', icon: '🪥', img: '/products/bamboo-toothbrush.jpg' },
+                    { name: 'Plastic Water Bottle', icon: '🧴', img: '/products/steel-water-bottle.jpg' },
                     { name: 'Cotton Tote Bag', icon: '🛍️', img: '/products/organic-cotton-tote-bag.jpg' },
                     { name: 'Coconut Bowl', icon: '🥥', img: '/products/coconut-shell-bowls.jpg' },
                     { name: 'Wooden Comb', icon: '🪵', img: '/products/neem-wood-comb.jpg' }
@@ -551,7 +614,6 @@ export default function ScannerPage() {
                     unoptimized
                   />
                 )}
-                {/* CV Reticle Scanline */}
                 <div className="absolute inset-0 bg-green-500/10 pointer-events-none" />
                 <motion.div
                   className="absolute left-0 right-0 h-1 bg-[#2ECC71] shadow-[0_0_15px_#2ECC71]"
@@ -562,10 +624,10 @@ export default function ScannerPage() {
 
               <div className="flex items-center gap-3 text-[#2ECC71] text-lg font-bold mb-2">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Executing Convolutional Layers...</span>
+                <span>Running Semantic Classification Engine...</span>
               </div>
               <p className="text-gray-400 text-xs max-w-sm mb-6">
-                Quantized MobileNet v1 is calculating top-5 Softmax activation logits in client WebGL memory.
+                MobileNet Top-5 logits are being mapped through our household taxonomy to detect product category.
               </p>
 
               {/* Progress checklist */}
@@ -574,20 +636,20 @@ export default function ScannerPage() {
                   <CheckCircle2 className="w-4 h-4 text-[#2ECC71]" />
                   <span>Image normalized to 224×224×3 RGB tensor</span>
                 </div>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <CheckCircle2 className="w-4 h-4 text-[#2ECC71]" />
+                  <span>Computing Top-5 Depthwise Softmax Logits</span>
+                </div>
                 <div className="flex items-center gap-2 text-[#2ECC71]">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Computing Depthwise Separable Convolutions</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-500">
-                  <Layers className="w-4 h-4" />
-                  <span>Mapping ImageNet classes to UN SDG 12 eco taxonomy</span>
+                  <span>Synthesizing Semantic Category Consensus</span>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* RESULTS STATE (Full CV HUD & Telemetry) */}
-          {scanState === 'results' && (
+          {/* RESULTS STATE (Refactored Semantic Recommendation Presentation) */}
+          {scanState === 'results' && semanticMatch && (
             <motion.div
               key="results"
               initial={{ opacity: 0, y: 20 }}
@@ -595,7 +657,7 @@ export default function ScannerPage() {
               exit={{ opacity: 0 }}
               className="space-y-8"
             >
-              {/* Telemetry Bar (Inference latency, WebGL, Tensor shape) */}
+              {/* Telemetry Bar (Latency, Backend, Tensor Shape) */}
               {telemetry && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#141414] border border-white/10 rounded-2xl p-4 text-xs">
                   <div className="flex items-center gap-2.5">
@@ -622,18 +684,18 @@ export default function ScannerPage() {
                   <div className="flex items-center gap-2.5">
                     <Shield className="w-4 h-4 text-yellow-400" />
                     <div>
-                      <div className="text-gray-500 text-[10px]">Client-Edge Privacy</div>
-                      <div className="font-mono font-bold text-green-400">100% Local</div>
+                      <div className="text-gray-500 text-[10px]">Visual Privacy</div>
+                      <div className="font-mono font-bold text-green-400">100% Client-Side</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Main Classification & Softmax Breakdown */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#121212] rounded-3xl p-6 border border-white/5 shadow-2xl">
-                {/* Scanned Image Preview */}
+              {/* ── CORE RESULT SECTION: Semantic Detection & Eco Recommendation ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#121212] rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl">
+                {/* Uploaded Input Image */}
                 <div className="lg:col-span-4 flex flex-col items-center">
-                  <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black">
+                  <div className="relative w-full aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black shadow-inner">
                     {uploadedImage && (
                       <Image
                         src={uploadedImage}
@@ -644,102 +706,246 @@ export default function ScannerPage() {
                       />
                     )}
                     <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-[#2ECC71] font-mono border border-[#2ECC71]/30">
-                      INPUT TENSOR CAPTURE
+                      INPUT FRAME CAPTURE
                     </div>
                   </div>
+
                   <button
                     onClick={reset}
-                    className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-semibold border border-white/10 transition-colors"
+                    className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded-xl text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     Scan Another Object
                   </button>
                 </div>
 
-                {/* Classification Details & Softmax Bar Chart */}
-                <div className="lg:col-span-8 flex flex-col justify-between">
+                {/* Primary Semantic Result Cards */}
+                <div className="lg:col-span-8 flex flex-col justify-between space-y-6">
                   <div>
+                    {/* Badge */}
                     <div className="inline-flex items-center gap-2 bg-[#2ECC71]/10 text-[#2ECC71] px-3 py-1 rounded-full text-xs font-bold mb-3 border border-[#2ECC71]/20">
-                      <Scan className="w-3.5 h-3.5" />
-                      Primary CV Classification
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Semantic Classification Engine
                     </div>
-                    <h2 className="text-3xl font-black capitalize tracking-tight text-white mb-2">
-                      {detectedItem}
-                    </h2>
-                    <p className="text-gray-400 text-xs md:text-sm leading-relaxed mb-6">
-                      MobileNet classified this object from the 1,000 ImageNet semantic taxonomy with highest softmax activation.
-                    </p>
 
-                    {/* Top-5 Softmax Probability Distribution (Visual Bar Chart) */}
-                    <div className="bg-[#181818] p-4 rounded-2xl border border-white/5 mb-6">
-                      <div className="flex items-center justify-between text-xs font-bold text-gray-400 mb-3">
-                        <span className="flex items-center gap-1.5">
-                          <BarChart3 className="w-4 h-4 text-[#2ECC71]" />
-                          Top-K Softmax Probability Distribution
+                    {/* Detected Product Category */}
+                    <div className="space-y-1 mb-4">
+                      <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                        Detected Product Category:
+                      </span>
+                      <h2 className="text-3xl md:text-4xl font-black capitalize tracking-tight text-white flex items-center gap-3">
+                        <span>{semanticMatch.displayName}</span>
+                        {/* Confidence Badge */}
+                        <span
+                          className={`text-xs px-3 py-1 rounded-full font-bold border font-mono uppercase ${
+                            semanticMatch.confidenceLevel === 'High'
+                              ? 'bg-green-500/10 text-[#2ECC71] border-[#2ECC71]/30'
+                              : semanticMatch.confidenceLevel === 'Medium'
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              : 'bg-red-500/10 text-red-400 border-red-500/30'
+                          }`}
+                        >
+                          {semanticMatch.confidenceLevel} Confidence ({semanticMatch.confidenceScore}%)
                         </span>
-                        <span className="text-[11px] text-gray-500">Confidence Scores</span>
-                      </div>
+                      </h2>
+                    </div>
 
-                      <div className="space-y-3">
-                        {topPredictions.map((pred, i) => {
-                          const percent = Math.round(pred.probability * 100);
-                          const cleanLabel = pred.className.split(',')[0].trim();
-                          return (
-                            <div key={i} className="text-xs">
-                              <div className="flex justify-between text-gray-300 font-medium mb-1">
-                                <span className="capitalize truncate max-w-[200px]">{cleanLabel}</span>
-                                <span className="font-mono text-[#2ECC71]">{percent}%</span>
-                              </div>
-                              <div className="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/5">
-                                <motion.div
-                                  className={`h-full rounded-full ${
-                                    i === 0
-                                      ? 'bg-gradient-to-r from-emerald-500 to-[#2ECC71]'
-                                      : 'bg-white/20'
-                                  }`}
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${Math.max(percent, 4)}%` }}
-                                  transition={{ duration: 0.8, delay: i * 0.1 }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
+                    {/* Low Confidence Warning Notice */}
+                    {semanticMatch.isApproximation && (
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs text-amber-300 flex items-start gap-2.5 mb-5">
+                        <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block font-bold">Approximation Notice:</strong>
+                          <span>
+                            Object detected with low confidence. Recommendations are based on semantic approximation.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommended Eco Alternative Card */}
+                    <div className="bg-[#181818] p-5 rounded-2xl border border-[#2ECC71]/30 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#2ECC71]/5 rounded-full blur-2xl pointer-events-none" />
+                      <div className="text-xs text-gray-400 mb-1 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                        <Leaf className="w-3.5 h-3.5 text-[#2ECC71]" />
+                        Recommended Eco Alternative:
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-1">
+                        <div>
+                          <h3 className="text-xl font-black text-white group-hover:text-[#2ECC71] transition-colors">
+                            {semanticMatch.recommendedProductName}
+                          </h3>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            Certified 100% biodegradable material • Zero microplastic formulation
+                          </p>
+                        </div>
+                        <Link
+                          href={`/product/${semanticMatch.recommendedProductSlug}`}
+                          className="bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wide transition-all shadow-[0_0_15px_rgba(46,204,113,0.3)] hover:scale-105 flex items-center gap-1.5 w-fit"
+                        >
+                          <span>View Product</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
                     </div>
                   </div>
 
-                  {/* Life Cycle Assessment (LCA) Panel */}
-                  {lcaData && (
-                    <div className="bg-gradient-to-br from-[#1C1510] to-[#141414] p-4 rounded-2xl border border-amber-500/20 text-xs">
-                      <div className="flex items-center gap-2 text-amber-400 font-bold mb-2">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>Environmental Life Cycle Assessment (LCA)</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-300">
-                        <div>
-                          <span className="text-gray-500 text-[10px] block">Material Composition</span>
-                          <span className="font-semibold text-white">{lcaData.materialType}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 text-[10px] block">Landfill Persistence</span>
-                          <span className="font-semibold text-red-400">{lcaData.landfillYears}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 text-[10px] block">Carbon Footprint</span>
-                          <span className="font-semibold text-amber-300">{lcaData.carbonFootprint}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 text-[10px] block">UN SDG Target</span>
-                          <span className="font-semibold text-[#2ECC71]">{lcaData.sdgGoal}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* ── EXPANDABLE: Technical AI Analysis (Raw ImageNet Predictions) ── */}
+                  <div className="border-t border-white/5 pt-4">
+                    <button
+                      onClick={() => setShowTechnicalAI(!showTechnicalAI)}
+                      className="w-full flex items-center justify-between py-2 text-xs text-gray-400 hover:text-white transition-colors cursor-pointer group"
+                    >
+                      <span className="flex items-center gap-2 font-semibold">
+                        <BarChart3 className="w-4 h-4 text-[#2ECC71]" />
+                        Technical AI Analysis (Raw ImageNet Softmax Logits)
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] text-[#2ECC71] group-hover:underline">
+                        <span>{showTechnicalAI ? 'Hide Logits' : 'View Raw Predictions'}</span>
+                        {showTechnicalAI ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </span>
+                    </button>
+
+                    <AnimatePresence>
+                      {showTechnicalAI && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden mt-3"
+                        >
+                          <div className="bg-[#161616] p-4 rounded-2xl border border-white/5 space-y-3">
+                            <p className="text-[11px] text-gray-400 leading-relaxed">
+                              Raw output from MobileNet 1,000-class ImageNet classification. Our Semantic Engine synthesized these Top-5 logits into <strong>{semanticMatch.displayName}</strong>.
+                            </p>
+                            <div className="space-y-2.5">
+                              {topPredictions.map((pred, i) => {
+                                const percent = Math.round(pred.probability * 100);
+                                const cleanLabel = pred.className.split(',')[0].trim();
+                                return (
+                                  <div key={i} className="text-xs">
+                                    <div className="flex justify-between text-gray-300 font-medium mb-1">
+                                      <span className="capitalize">{cleanLabel}</span>
+                                      <span className="font-mono text-[#2ECC71]">{percent}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/5">
+                                      <div
+                                        className={`h-full rounded-full ${
+                                          i === 0
+                                            ? 'bg-gradient-to-r from-emerald-500 to-[#2ECC71]'
+                                            : 'bg-white/20'
+                                        }`}
+                                        style={{ width: `${Math.max(percent, 4)}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
 
-              {/* Recommended Sustainable Replacements */}
+              {/* ── VIVA-FRIENDLY FEATURE: "How AI Reached This Recommendation" ── */}
+              <div className="bg-[#121212] rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <Compass className="w-5 h-5 text-[#2ECC71]" />
+                  <h3 className="text-lg md:text-xl font-black">
+                    How AI Reached This Recommendation
+                  </h3>
+                </div>
+                <p className="text-xs text-gray-400 mb-6">
+                  Step-by-step visual audit trail explaining the Computer Vision and Semantic pipeline during viva demonstrations.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+                  {[
+                    {
+                      step: '01',
+                      title: 'Input Frame Capture',
+                      desc: semanticMatch.explanation.step1_upload,
+                      badge: 'Sensory Stage'
+                    },
+                    {
+                      step: '02',
+                      title: 'MobileNet Classification',
+                      desc: semanticMatch.explanation.step2_mobilenet,
+                      badge: 'Convolutional Layer'
+                    },
+                    {
+                      step: '03',
+                      title: 'Semantic Engine Mapping',
+                      desc: semanticMatch.explanation.step3_semantic,
+                      badge: 'Consensus Mapping'
+                    },
+                    {
+                      step: '04',
+                      title: 'Eco Recommendation',
+                      desc: semanticMatch.explanation.step4_recommendation,
+                      badge: 'UN SDG 12 Action'
+                    }
+                  ].map((node, i) => (
+                    <div
+                      key={i}
+                      className="bg-[#161616] p-4 rounded-2xl border border-white/5 relative flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-mono text-xs font-bold text-[#2ECC71]">
+                            STEP {node.step}
+                          </span>
+                          <span className="text-[9px] bg-white/5 text-gray-400 px-2 py-0.5 rounded font-mono">
+                            {node.badge}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-xs text-white mb-1.5">{node.title}</h4>
+                        <p className="text-[11px] text-gray-400 leading-relaxed">
+                          {node.desc}
+                        </p>
+                      </div>
+                      {i < 3 && (
+                        <div className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-gray-600">
+                          →
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Environmental Life Cycle Assessment (LCA) */}
+              {lcaData && (
+                <div className="bg-gradient-to-br from-[#1C1510] to-[#141414] p-6 rounded-3xl border border-amber-500/20 shadow-2xl text-xs">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold mb-4">
+                    <AlertTriangle className="w-5 h-5" />
+                    <span className="text-sm">Environmental Life Cycle Assessment (LCA) for {semanticMatch.displayName}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-gray-300">
+                    <div className="bg-[#121212]/60 p-3.5 rounded-xl border border-white/5">
+                      <span className="text-gray-500 text-[10px] block mb-1">Material Composition</span>
+                      <span className="font-semibold text-white">{lcaData.materialType}</span>
+                    </div>
+                    <div className="bg-[#121212]/60 p-3.5 rounded-xl border border-white/5">
+                      <span className="text-gray-500 text-[10px] block mb-1">Landfill Persistence</span>
+                      <span className="font-semibold text-red-400">{lcaData.landfillYears}</span>
+                    </div>
+                    <div className="bg-[#121212]/60 p-3.5 rounded-xl border border-white/5">
+                      <span className="text-gray-500 text-[10px] block mb-1">Carbon Footprint</span>
+                      <span className="font-semibold text-amber-300">{lcaData.carbonFootprint}</span>
+                    </div>
+                    <div className="bg-[#121212]/60 p-3.5 rounded-xl border border-white/5">
+                      <span className="text-gray-500 text-[10px] block mb-1">UN SDG Target</span>
+                      <span className="font-semibold text-[#2ECC71]">{lcaData.sdgGoal}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recommended Sustainable Replacements Grid */}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold flex items-center gap-2">
@@ -816,7 +1022,7 @@ export default function ScannerPage() {
               </p>
               <button
                 onClick={reset}
-                className="bg-[#2ECC71] hover:bg-green-400 text-black font-bold py-2.5 px-6 rounded-xl text-xs uppercase tracking-wide transition-all"
+                className="bg-[#2ECC71] hover:bg-green-400 text-black font-bold py-2.5 px-6 rounded-xl text-xs uppercase tracking-wide transition-all cursor-pointer"
               >
                 Try Again
               </button>

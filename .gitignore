@@ -48,3 +48,10 @@ prisma/dev.db-journal
 
 # Prisma Platform config (not needed for ORM)
 prisma.config.ts
+
+# Temporary docx / report artifacts
+*.docx
+~$*
+__pycache__/
+report_images/
+*.png
