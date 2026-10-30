@@ -402,12 +402,12 @@ export default function StorePage() {
               <span className="text-xs font-semibold text-white">Orders</span>
             </button>
 
-            {/* Eco Scanner Button */}
+            {/* Eco Scanner Button (Prominent & Larger) */}
             <Link
               href="/scanner"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] font-black text-xs transition-all shadow-[0_0_15px_rgba(46,204,113,0.3)] hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2ECC71] hover:bg-green-400 text-[#0D0D0D] font-black text-xs sm:text-sm transition-all shadow-[0_0_20px_rgba(46,204,113,0.35)] hover:scale-105 border border-[#2ECC71]"
             >
-              <Scan className="w-4 h-4" />
+              <Scan className="w-4 h-4 stroke-[2.5]" />
               <span className="hidden sm:inline">AI Vision Scanner</span>
             </Link>
 

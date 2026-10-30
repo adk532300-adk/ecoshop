@@ -91,9 +91,9 @@ export default function NavBar() {
         <div className="flex items-center gap-2.5">
           <Link
             href="/scanner"
-            className="flex items-center gap-1.5 bg-[#2ECC71] hover:bg-green-400 text-black font-black text-xs px-3.5 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(46,204,113,0.3)] hover:scale-105"
+            className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all shadow-[0_0_20px_rgba(46,204,113,0.35)] hover:scale-105 border border-[#2ECC71]"
           >
-            <Scan className="w-4 h-4" />
+            <Scan className="w-4 h-4 stroke-[2.5]" />
             <span className="hidden sm:inline">AI Vision Scanner</span>
           </Link>
           <button className="p-2 rounded-xl bg-white/5 border border-white/10 hover:border-[#2ECC71] transition-colors">
