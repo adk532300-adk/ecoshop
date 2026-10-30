@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ChatDrawer from '@/components/chatbot/ChatDrawer';
+import EcoDifferentiatorSection from '@/components/store/EcoDifferentiatorSection';
 import * as tf from '@tensorflow/tfjs';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 
@@ -794,6 +795,12 @@ export default function StorePage() {
             </div>
           </div>
         </section>
+
+        {/* ── WHAT MAKES ECOSHOP DIFFERENT (DIFFERENTIATOR SECTION) ── */}
+        <EcoDifferentiatorSection
+          products={products}
+          onAddToCart={addToCart}
+        />
 
         {/* ── IMPACT DASHBOARD ── */}
         <section className="bg-[#1A1A1A] rounded-3xl p-6 border border-white/5 shadow-2xl">

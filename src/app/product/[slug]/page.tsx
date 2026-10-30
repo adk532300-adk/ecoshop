@@ -268,6 +268,34 @@ export default async function ProductPage({ params }: Props) {
               </div>
             </div>
           </div>
+
+          {/* Digital Material Passport & Zero-Waste Guarantee */}
+          <div className="mt-8 bg-gradient-to-r from-emerald-950/40 via-[#132216] to-[#0D0D0D] p-6 rounded-2xl border border-[#2ECC71]/30">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 text-xs font-bold text-[#2ECC71] uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4" />
+                  Digital Material Passport & Circular Guarantee
+                </div>
+                <h3 className="text-lg font-bold text-white">
+                  Traceable Circular Supply Chain
+                </h3>
+                <p className="text-xs text-gray-400 max-w-2xl leading-relaxed">
+                  Unlike generic marketplaces where material origin is obfuscated, this item comes with verified agricultural by-product traceability, zero microplastic shed guarantee, and 100% plastic-free compostable transit packaging.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-[#181818] px-4 py-2.5 rounded-xl border border-white/10 text-center">
+                  <span className="text-[10px] text-gray-400 uppercase block font-semibold">Microplastics</span>
+                  <span className="text-xs font-black text-[#2ECC71] font-mono">0.00% Zero Shed</span>
+                </div>
+                <div className="bg-[#181818] px-4 py-2.5 rounded-xl border border-white/10 text-center">
+                  <span className="text-[10px] text-gray-400 uppercase block font-semibold">Packaging</span>
+                  <span className="text-xs font-black text-cyan-400 font-mono">100% Compostable</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
     </div>
