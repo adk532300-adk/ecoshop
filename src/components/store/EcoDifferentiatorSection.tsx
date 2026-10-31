@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, ShieldCheck, Zap, Leaf, Check,
-  Activity, ArrowRight, RefreshCw, ShoppingCart,
-  Layers, CheckCircle2, ChevronRight, Eye, AlertTriangle
+  Sparkles, Zap, Leaf, Check,
+  ArrowRight, ShoppingCart,
+  Layers, AlertTriangle
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface Product {
@@ -101,39 +99,6 @@ const PLASTIC_AUDIT_ITEMS: PlasticItem[] = [
     co2eGramPerYear: 380,
     slug: 'wheat-straw-phone-case',
     ecoAlternativeName: 'Wheat Straw Case'
-  }
-];
-
-const COMPARISON_COLUMNS = [
-  {
-    feature: 'AI Computer Vision',
-    traditional: 'Keyword search bar with sponsored ads & SEO clutter',
-    ecoshop: 'Real-time Edge MobileNet scanner (40ms) with zero cloud latency',
-    icon: <Zap className="w-4 h-4 text-[#2ECC71]" />
-  },
-  {
-    feature: 'Packaging Standard',
-    traditional: 'Plastic bubble wrap, LDPE air pillows & synthetic tape',
-    ecoshop: '100% Plastic-Free: Recycled kraft boxes & water-activated paper tape',
-    icon: <Leaf className="w-4 h-4 text-[#2ECC71]" />
-  },
-  {
-    feature: 'Material Transparency',
-    traditional: 'Vague marketing tags ("Green", "Eco") with unverified claims',
-    ecoshop: 'Open Life Cycle Assessment (LCA) with material composition breakdown',
-    icon: <ShieldCheck className="w-4 h-4 text-[#2ECC71]" />
-  },
-  {
-    feature: 'Data & Visual Privacy',
-    traditional: 'Tracking cookies, user profiling, and camera images sent to cloud',
-    ecoshop: '100% Client-Side WebGL: No camera frames ever leave your device',
-    icon: <Activity className="w-4 h-4 text-[#2ECC71]" />
-  },
-  {
-    feature: 'Microplastic Screening',
-    traditional: 'Contains hidden synthetic fibers that shed in laundry/soil',
-    ecoshop: 'Zero synthetic poly-shedding certification on all personal care',
-    icon: <CheckCircle2 className="w-4 h-4 text-[#2ECC71]" />
   }
 ];
 
@@ -519,77 +484,24 @@ export default function EcoDifferentiatorSection({ products, onAddToCart }: EcoD
         </div>
       </div>
 
-      {/* ── 4. DIRECT COMPARISON: ECOSHOP VS TRADITIONAL E-COMMERCE ── */}
-      <div className="bg-[#121212] rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="text-xs font-bold text-[#2ECC71] uppercase tracking-wider block mb-1">
-            Platform Benchmark
-          </span>
-          <h3 className="text-xl sm:text-3xl font-black text-white">
-            Traditional E-Commerce vs EcoShop
-          </h3>
-          <p className="text-gray-400 text-xs mt-1">
-            See how EcoShop’s technology and sustainability principles redefine modern shopping.
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="py-3 px-4 font-bold text-gray-400 uppercase tracking-wider">Dimension</th>
-                <th className="py-3 px-4 font-bold text-red-400 uppercase tracking-wider bg-red-500/5 rounded-t-xl">
-                  Traditional E-Commerce (Amazon / Flipkart)
-                </th>
-                <th className="py-3 px-4 font-bold text-[#2ECC71] uppercase tracking-wider bg-[#2ECC71]/10 rounded-t-xl">
-                  EcoShop Edge Commerce
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {COMPARISON_COLUMNS.map((row, i) => (
-                <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-4 px-4 font-semibold text-white flex items-center gap-2">
-                    {row.icon}
-                    <span>{row.feature}</span>
-                  </td>
-                  <td className="py-4 px-4 text-gray-400 bg-red-500/[0.02]">
-                    <div className="flex items-start gap-2">
-                      <span className="text-red-500 text-sm">✕</span>
-                      <span>{row.traditional}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-gray-200 bg-[#2ECC71]/[0.03]">
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-[#2ECC71] flex-shrink-0 mt-0.5" />
-                      <span className="font-medium text-white">{row.ecoshop}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Live Vision Shortcut Banner */}
-        <div className="mt-8 bg-gradient-to-r from-emerald-950 via-[#102414] to-[#0D0D0D] p-5 rounded-2xl border border-[#2ECC71]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#2ECC71] p-2.5 rounded-xl text-black">
-              <Zap className="w-5 h-5 fill-black" />
-            </div>
-            <div>
-              <div className="text-sm font-black text-white">Experience the Difference: Try the AI EcoScanner</div>
-              <div className="text-xs text-gray-300">Point your camera at any item right now to run instant material classification.</div>
-            </div>
+      {/* Live Vision Shortcut Banner */}
+      <div className="bg-gradient-to-r from-emerald-950 via-[#102414] to-[#0D0D0D] p-6 rounded-3xl border border-[#2ECC71]/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+        <div className="flex items-center gap-3.5">
+          <div className="bg-[#2ECC71] p-3 rounded-2xl text-black">
+            <Zap className="w-5 h-5 fill-black" />
           </div>
-          <Link
-            href="/scanner"
-            className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(46,204,113,0.3)] hover:scale-105 flex-shrink-0"
-          >
-            <span>Launch Scanner</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <div>
+            <div className="text-base font-black text-white">Experience the Difference: Try the AI EcoScanner</div>
+            <div className="text-xs text-gray-300">Point your camera at any everyday item to run instant real-time material classification.</div>
+          </div>
         </div>
+        <Link
+          href="/scanner"
+          className="flex items-center gap-2 bg-[#2ECC71] hover:bg-green-400 text-black font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(46,204,113,0.35)] hover:scale-105 flex-shrink-0"
+        >
+          <span>Launch Scanner</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
     </section>
   );
